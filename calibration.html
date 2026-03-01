@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Стратегическа Калибрация | CEMENT QUALITY CONTROL ASSISTANT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <style>
+        .calibration-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .upload-card {
+            background: var(--panel-bg);
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .upload-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .upload-box {
+            border: 2px dashed rgb(200, 200, 200);
+            padding: 30px;
+            text-align: center;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-box:hover {
+            border-color: var(--holcim-blue);
+            background: rgba(30, 60, 114, 0.02);
+        }
+
+        .upload-box i {
+            font-size: 2.5rem;
+            color: var(--holcim-green);
+            margin-bottom: 15px;
+        }
+
+        .results-card {
+            background: var(--panel-bg);
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table.calib-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        table.calib-table th,
+        table.calib-table td {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        table.calib-table th {
+            background: rgba(0, 0, 0, 0.03);
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="dashboard-header">
+        <div class="logo-container">
+            <i class="fa-solid fa-microscope" style="font-size: 2rem; color: var(--holcim-blue-dark);"></i>
+        </div>
+        <h1>СТРАТЕГИЧЕСКА КАЛИБРАЦИЯ</h1>
+        <div class="header-actions">
+            <a href="index.html" class="utility-btn" style="text-decoration: none; color: inherit;"><i
+                    class="fa-solid fa-arrow-left"></i> Назад към Симулатора</a>
+        </div>
+    </header>
+
+    <main class="calibration-container">
+        <div class="upload-card">
+            <h2 style="color: var(--accent-color); margin-bottom: 10px;">Стратегически Анализ на Исторически Данни</h2>
+            <p style="color: var(--text-muted); margin-bottom: 25px;">Качете суровите файлове, за да изчислите стабилни,
+                базови коефициенти на влияние за различни рецепти.</p>
+
+            <div class="upload-grid">
+                <label class="upload-box">
+                    <i class="fa-solid fa-file-csv"></i>
+                    <h3>Оперативен Дневник</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Задължителен CSV файл с
+                        дозировки и XRF химичен анализ.</p>
+                    <input type="file" id="opFile" accept=".csv, .xlsx" style="display: none;">
+                    <div id="opFileName" style="margin-top: 10px; font-weight: 500; color: var(--holcim-blue);"></div>
+                </label>
+
+                <label class="upload-box">
+                    <i class="fa-solid fa-file-waveform"></i>
+                    <h3>XRD Анализ</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Опционален CSV файл за
+                        минералогия (C3S, C2S и др.).</p>
+                    <input type="file" id="xrdFile" accept=".csv, .xlsx" style="display: none;">
+                    <div id="xrdFileName" style="margin-top: 10px; font-weight: 500; color: var(--holcim-blue);"></div>
+                </label>
+            </div>
+
+            <div style="display: flex; gap: 20px; align-items: flex-end;">
+                <div class="form-group" style="flex: 1;">
+                    <label for="millSelect">Мелница</label>
+                    <select id="millSelect" class="curr-mat-input"
+                        style="width: 100%; border: 1px solid #ccc; padding: 10px; border-radius: 4px;">
+                        <option value="mill1">МЕЛНИЦА 1</option>
+                        <option value="mill3">МЕЛНИЦА 3</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label for="cementSelect">Тип Цимент</label>
+                    <input type="text" id="cementSelect" placeholder="Напр. CEM II / B-LL 32.5 R" class="curr-mat-input"
+                        style="width: 100%; border: 1px solid #ccc; padding: 10px; border-radius: 4px;">
+                </div>
+                <button type="button" id="analyzeBtn" class="apply-btn"
+                    style="height: 48px; min-width: 300px;">АНАЛИЗИРАЙ И ИЗЧИСЛИ</button>
+            </div>
+        </div>
+
+        <div class="results-card hidden" id="resultsCard">
+            <h2><i class="fa-solid fa-square-poll-vertical"></i> Резултати от Изчислението</h2>
+
+            <div class="table-container">
+                <table class="calib-table" id="resultsTable">
+                    <thead>
+                        <tr>
+                            <th>Връзка (Действие -> Резултат)</th>
+                            <th>Изчислен Базов Коефициент</th>
+                            <th>Брой Анализирани Случаи</th>
+                            <th>Стандартно Отклонение</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Динамично съдържание -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="margin-top: 25px; text-align: right;">
+                <button type="button" id="saveBtn" class="utility-btn"
+                    style="background: var(--holcim-green); color: white; border: none; padding: 12px 24px; font-weight: 600;"><i
+                        class="fa-solid fa-floppy-disk"></i> ЗАПАЗИ КАТО БАЗОВИ КОЕФИЦИЕНТИ</button>
+            </div>
+        </div>
+    </main>
+
+    <div id="toast-container"></div>
+    <script src="columnMappers.js"></script>
+    <script src="calibration.js"></script>
+</body>
+
+</html>

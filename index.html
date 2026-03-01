@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEMENT QUALITY CONTROL ASSISTANT</title>
+    <!-- Core Fonts & Styles -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS for Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+</head>
+
+<body>
+    <header class="dashboard-header">
+        <div class="logo-container">
+            <i class="fa-solid fa-cubes-stacked" style="font-size: 2rem; color: var(--holcim-blue-dark);"></i>
+        </div>
+        <h1>CEMENT QUALITY CONTROL ASSISTANT</h1>
+        <div class="header-actions">
+            <a href="calibration.html" class="utility-btn" style="text-decoration: none; color: inherit;"><i
+                    class="fa-solid fa-microscope"></i> Стратегическа Калибрация</a>
+            <button id="exportBtn" class="utility-btn"><i class="fa-solid fa-download"></i> Запази в Excel</button>
+            <button id="importBtn" class="utility-btn"><i class="fa-solid fa-upload"></i> Дърпай от Excel</button>
+            <input type="file" id="importFile" accept=".xlsx, .xls" style="display:none;">
+        </div>
+    </header>
+
+    <div class="mill-selector">
+        <button class="mill-btn active" data-mill="mill1">МЕЛНИЦА 1</button>
+        <button class="mill-btn" data-mill="mill2">МЕЛНИЦА 2</button>
+        <button class="mill-btn" data-mill="mill3">МЕЛНИЦА 3</button>
+    </div>
+
+    <main class="control-panel">
+        <!-- Левия панел -->
+        <section class="left-col">
+            <div class="panel cement-selection">
+                <h2><i class="fa-solid fa-gears"></i> Настройки на производство</h2>
+                <div class="form-group">
+                    <label for="cementType">Тип Цимент:</label>
+                    <div style="display: flex; gap: 10px;">
+                        <select id="cementType" style="flex:1;">
+                            <option value="">-- Избери рецепта --</option>
+                            <!-- Ще се попълни от JS -->
+                        </select>
+                        <button type="button" id="applyCementBtn" class="utility-btn"
+                            style="white-space: nowrap; border-radius: var(--radius-sm);"><i </div>
+                    </div>
+
+                    <div class="recommendation-mode-section"
+                        style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border-color);">
+                        <h3 style="font-size: 0.9rem; color: var(--accent-color); margin-bottom: 10px;"><i
+                                class="fa-solid fa-brain"></i> Режим на Препоръките</h3>
+                        <div class="radio-card-group">
+                            <label class="radio-card">
+                                <input type="radio" name="recMode" value="static" checked>
+                                <div class="radio-card-content">
+                                    <div class="radio-icon"></div>
+                                    <div class="radio-text">
+                                        <strong>Статичен Метод</strong>
+                                        <span>Използва стабилните базови коефициенти от рецептата.</span>
+                                    </div>
+                                </div>
+                            </label>
+                            <label class="radio-card">
+                                <input type="radio" name="recMode" value="preload">
+                                <div class="radio-card-content">
+                                    <div class="radio-icon"></div>
+                                    <div class="radio-text">
+                                        <strong>Предварително Зареден</strong>
+                                        <span>Използва оптимизирани коефициенти от стратегическия анализ.</span>
+                                    </div>
+                                </div>
+                            </label>
+                            <label class="radio-card">
+                                <input type="radio" name="recMode" value="dynamic">
+                                <div class="radio-card-content">
+                                    <div class="radio-icon"></div>
+                                    <div class="radio-text">
+                                        <strong>Динамичен (Адаптивен)</strong>
+                                        <span>Автоматично се адаптира спрямо последните 3 корекции.</span>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel hidden" id="currentRecipePanel">
+                    <h2><i class="fa-solid fa-scale-balanced"></i> Текущо дозиране (%)</h2>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom: 15px;">Какво е зададено на
+                        дозаторите в момента. Клинкерът (Общо) се изчислява автоматично.</p>
+                    <div class="input-grid" id="currentRecipeGrid">
+                        <!-- Динамични полета за текущата рецепта -->
+                    </div>
+                </div>
+
+                <div class="panel data-input">
+                    <h2><i class="fa-solid fa-flask"></i> Въвеждане на данни (Проба)</h2>
+                    <form id="sampleForm">
+                        <div class="input-grid" id="inputGrid">
+                            <!-- Динамични полета според рецептата -->
+                        </div>
+                        <button type="submit" class="action-btn analyze-btn" id="analyzeBtn"
+                            disabled>АНАЛИЗИРАЙ</button>
+                    </form>
+                </div>
+
+                <div class="panel recommendations">
+                    <h2><i class="fa-solid fa-lightbulb"></i> Препоръчителна Корекция</h2>
+                    <div id="correctionResult" class="correction-box">
+                        <p class="placeholder-text" style="color:var(--text-muted)">Въведете данни за анализ</p>
+                    </div>
+
+                    <div id="feedbackSection" class="feedback-section hidden">
+                        <h3 style="font-size: 1rem; color: var(--text-main);">Обратна връзка (Какво направихте?)</h3>
+                        <div class="feedback-buttons">
+                            <button class="fb-btn apply-btn" data-action="apply">✓ Приложих препоръката</button>
+                            <button class="fb-btn manual-btn" data-action="manual">✎ Ръчна промяна</button>
+                            <button class="fb-btn reject-btn" data-action="reject">✗ Без промяна</button>
+                        </div>
+                        <div id="manualInputSection" class="manual-input-section hidden">
+                            <h4 style="margin-bottom: 10px; color: var(--text-main);">Въведете реалните промени (%):
+                            </h4>
+                            <div id="manualInputsGrid" class="input-grid">
+                                <!-- Динамично генерирани инпути за материали -->
+                            </div>
+                            <button type="button" class="action-btn save-manual-btn" id="saveManualBtn"
+                                style="padding: 10px; font-size: 1rem;">Запази ръчните промени</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Симулатор (What-If) Панел -->
+                <div class="panel simulator-panel hidden" id="simulatorPanel">
+                    <h2 style="color: var(--accent-color);"><i class="fa-solid fa-wand-magic-sparkles"></i> Симулатор
+                        (What-If Анализ)</h2>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom: 15px;">Променете стойностите
+                        по-долу, за да видите как ще се отразят на параметрите на цимента (на база текущите
+                        коефициенти).
+                    </p>
+
+                    <div class="input-grid" id="simInputsGrid">
+                        <!-- Запълва се динамично със суровини -->
+                    </div>
+
+                    <h3
+                        style="font-size: 0.95rem; color: var(--text-muted); margin-top: 15px; margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
+                        Прогнозни резултати:</h3>
+                    <div class="input-grid" id="simResultsGrid">
+                        <!-- Запълва се динамично с прогнозирани стойности за параметри като SO3, Cl, C3S -->
+                    </div>
+                </div>
+
+        </section>
+
+        <!-- Десния панел -->
+        <section class="right-col">
+            <div class="panel targets-panel">
+                <h2><i class="fa-solid fa-bullseye"></i> Текущи Цели</h2>
+                <table class="data-table" id="targetsTable">
+                    <thead>
+                        <tr>
+                            <th>Параметър</th>
+                            <th>Мин</th>
+                            <th>Цел</th>
+                            <th>Макс</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Динамични редове -->
+                        <tr>
+                            <td colspan="4" class="placeholder-text" style="color:var(--text-muted)">Изберете цимент
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="panel charts-panel">
+                <h2><i class="fa-solid fa-chart-radar"></i> Отклонение от ЦЕЛ (Радар)</h2>
+                <div class="chart-container">
+                    <canvas id="radarChart"></canvas>
+                </div>
+            </div>
+
+            <div class="panel history-panel" style="flex: 1;">
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid rgba(0, 180, 235, 0.2); padding-bottom: 12px; margin-bottom: 24px;">
+                    <h2 style="margin: 0; border: none; padding: 0;"><i class="fa-solid fa-clock-rotate-left"></i>
+                        История на измерванията</h2>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <label for="historyDate"
+                            style="color:var(--text-main); margin:0; font-size:0.85rem;">Дата:</label>
+                        <input type="date" id="historyDate" style="padding: 8px 12px; font-size: 0.9rem; width: auto;"
+                            title="Филтрирай по дата">
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table" id="historyTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 10%">Час</th>
+                                <th style="width: 25%">Марка & Дозиране</th>
+                                <th style="width: 25%">Данни (Проба)</th>
+                                <th style="width: 40%">Направена корекция</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Динамични редове -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <div id="toast-container"></div>
+    <script src="columnMappers.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
