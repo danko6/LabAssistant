@@ -203,7 +203,7 @@ async function init() {
 
 async function loadState() {
     try {
-        const response = await fetch('http://localhost:3000/api/state');
+        const response = await fetch('/api/state');
         const saved = await response.json();
 
         if (saved && Object.keys(saved).length > 0) {
@@ -217,7 +217,7 @@ async function loadState() {
 
 async function saveState() {
     try {
-        await fetch('http://localhost:3000/api/state', {
+        await fetch('/api/state', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
